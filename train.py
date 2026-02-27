@@ -57,7 +57,7 @@ def main():
     train_loader = DataLoader(
         dataset=train_voc_datasets,
         batch_size=BATCH_SIZE,
-        num_workers=NUM_WORKERS,
+        # num_workers=NUM_WORKERS,
         shuffle=False,
         drop_last=True,
     )
