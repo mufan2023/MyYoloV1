@@ -15,7 +15,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 2e-5  # YOLO训练初期建议用较小的学习率防止梯度爆炸
 BATCH_SIZE = 16
 WEIGHT_DECAY = 0.0005
-EPOCHS = 1
+EPOCHS = 100
 NUM_WORKERS = 4
 SAVE_MODEL_PATH = "checkpoint.pth"
 
@@ -39,7 +39,6 @@ def train_fn(train_loader, model, optimizer, loss_fn):
         mean_loss.append(loss.item())
         loop.set_postfix(loss=sum(mean_loss) / len(mean_loss))
 
-        break
 
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
 
