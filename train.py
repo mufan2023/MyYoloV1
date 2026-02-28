@@ -9,6 +9,7 @@ from model import MyYoloV1
 from loss import MyYOLOV1Loss
 from dataset import train_voc_datasets
 from tqdm import tqdm
+import os
 
 # --- 超参数配置 ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -53,11 +54,24 @@ def main():
     )
     loss_fn = MyYOLOV1Loss()
 
+    # --- 新增：加载断点逻辑 ---
+    start_epoch = 0
+    if os.path.exists(SAVE_MODEL_PATH):
+        print(f"--- Loading checkpoint: {SAVE_MODEL_PATH} ---")
+
+        # 恢复模型权重
+
+        # 恢复优化器参数（非常重要！）
+
+        # 恢复轮数（从下一轮开始）
+        
+        print(f"--- Resuming from epoch {start_epoch} ---")
+
     # 3. 数据加载器
     train_loader = DataLoader(
         dataset=train_voc_datasets,
         batch_size=BATCH_SIZE,
-        # num_workers=NUM_WORKERS,
+        num_workers=NUM_WORKERS,
         shuffle=False,
         drop_last=True,
     )

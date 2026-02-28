@@ -101,11 +101,22 @@ train_voc_datasets = torchvision.datasets.VOCDetection(
     target_transform=MyTargetTransform(),
     download=False,
 )
+
+vocTestPath = "data/voc2007/VOCtest_06-Nov-2007"
+test_voc_datasets = torchvision.datasets.VOCDetection(
+    root=vocTestPath,
+    year="2007",
+    image_set="test",
+    transform=transform,
+    target_transform=MyTargetTransform(),
+    download=False,
+)
 debug = False
 if __name__ == "__main__":
     ic("111")
     debug = True
     ic(len(train_voc_datasets))
+    ic(len(test_voc_datasets))
     image, target = train_voc_datasets[0]
     ic(image.shape, target.shape)
     ic(target[3, 3, :])
