@@ -94,6 +94,10 @@ def main():
         torch.save(check_point, SAVE_MODEL_PATH)
         print(f"--> Checkpoint saved to {SAVE_MODEL_PATH}")
 
+        if (epoch + 1) % 10 == 0:
+            TEN_SAVE_MODEL_PATH = "checkpoint-" + str(epoch + 1) + ".pt"
+            print(f"--> Checkpoint saved to {SAVE_MODEL_PATH}")
+
     ic("111")
 
 
