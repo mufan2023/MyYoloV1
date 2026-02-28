@@ -39,7 +39,6 @@ def train_fn(train_loader, model, optimizer, loss_fn):
         mean_loss.append(loss.item())
         loop.set_postfix(loss=sum(mean_loss) / len(mean_loss))
 
-
     print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
 
 
@@ -58,13 +57,19 @@ def main():
     if os.path.exists(SAVE_MODEL_PATH):
         print(f"--- Loading checkpoint: {SAVE_MODEL_PATH} ---")
 
+        check_point = torch.load(SAVE_MODEL_PATH, map_location=DEVICE)
+
         # 恢复模型权重
+        model.load_state_dict(check_point["state_dict"])
 
         # 恢复优化器参数（非常重要！）
+        optimizer.load_state_dict(check_point["optimizer"])
 
         # 恢复轮数（从下一轮开始）
+        start_epoch = check_point["epoch"]
 
         print(f"--- Resuming from epoch {start_epoch} ---")
+    # -----------------------
 
     # 3. 数据加载器
     train_loader = DataLoader(
@@ -76,7 +81,7 @@ def main():
     )
 
     # 4. 训练循环
-    for epoch in range(EPOCHS):
+    for epoch in range(start_epoch, EPOCHS):
         print(f"\nEpoch [{epoch+1}/{EPOCHS}]")
 
         train_fn(train_loader, model, optimizer, loss_fn)
@@ -84,6 +89,7 @@ def main():
         check_point = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
+            "epoch": epoch + 1,  # 存入下一轮的起点
         }
         torch.save(check_point, SAVE_MODEL_PATH)
         print(f"--> Checkpoint saved to {SAVE_MODEL_PATH}")
