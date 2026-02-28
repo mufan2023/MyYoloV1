@@ -1,12 +1,6 @@
 import torch
 from icecream import ic
-from torch.utils.data import Dataset, DataLoader
 import torchvision
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from PIL import Image
-import os
-from torch.utils.tensorboard.writer import SummaryWriter
 import numpy as np
 
 

@@ -1,7 +1,6 @@
 import torch
 from icecream import ic
 from torch import nn, optim
-from torch.utils.tensorboard.writer import SummaryWriter
 from PIL import Image
 from torchvision import transforms
 from torch.utils.data import DataLoader
@@ -64,7 +63,7 @@ def main():
         # 恢复优化器参数（非常重要！）
 
         # 恢复轮数（从下一轮开始）
-        
+
         print(f"--- Resuming from epoch {start_epoch} ---")
 
     # 3. 数据加载器
