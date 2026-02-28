@@ -18,7 +18,7 @@ BATCH_SIZE = 16
 WEIGHT_DECAY = 0.0005
 EPOCHS = 100
 NUM_WORKERS = 4
-SAVE_MODEL_PATH = "checkpoint.pth"
+SAVE_MODEL_PATH = "output/checkpoint/checkpoint.pth"
 
 
 def train_fn(train_loader, model, optimizer, loss_fn, writer: SummaryWriter, epoch):
@@ -109,7 +109,7 @@ def main():
         print(f"--> Checkpoint saved to {SAVE_MODEL_PATH}")
 
         if (epoch + 1) % 10 == 0:
-            TEN_SAVE_MODEL_PATH = "checkpoint-" + str(epoch + 1) + ".pt"
+            TEN_SAVE_MODEL_PATH = "output/checkpoint/checkpoint-" + str(epoch + 1) + ".pt"
             torch.save(check_point, TEN_SAVE_MODEL_PATH)
             print(f"--> Checkpoint saved to {TEN_SAVE_MODEL_PATH}")
 
