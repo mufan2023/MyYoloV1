@@ -92,7 +92,6 @@ class MyYOLOV1Loss(nn.Module):
             ic(pred_conf.shape, target_conf.shape)
             ic(conf_loss_obj)
 
-
         # ======================== #
         # 3. 置信度损失 (No Obj Loss) #
         # ======================== #
@@ -122,7 +121,12 @@ class MyYOLOV1Loss(nn.Module):
             + class_loss
         )
 
-        return loss
+        return loss, (
+            coord_loss.item(),
+            conf_loss_obj.item(),
+            no_obj_loss.item(),
+            class_loss.item(),
+        )
 
     def intersection_over_union(self, boxes_preds, boxes_lables, box_format="midpoint"):
         """

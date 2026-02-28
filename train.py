@@ -9,6 +9,7 @@ from loss import MyYOLOV1Loss
 from dataset import train_voc_datasets
 from tqdm import tqdm
 import os
+from torch.utils.tensorboard.writer import SummaryWriter
 
 # --- 超参数配置 ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -20,26 +21,38 @@ NUM_WORKERS = 4
 SAVE_MODEL_PATH = "checkpoint.pth"
 
 
-def train_fn(train_loader, model, optimizer, loss_fn):
+def train_fn(train_loader, model, optimizer, loss_fn, writer: SummaryWriter, epoch):
     loop = tqdm(train_loader, leave=True)
-    mean_loss = []
+    losses = []
     for batch_idx, (x, y) in enumerate(loop):
         x, y = x.to(DEVICE), y.to(DEVICE)
 
         # 前向传播
         out = model(x)
-        loss = loss_fn(out, y)
+        loss, loss_parts = loss_fn(out, y)
 
         # 反向传播
         optimizer.zero_grad()
         loss.backward()
+
+        # 梯度裁剪：防止训练初期梯度爆炸
+
         optimizer.step()
 
         # 更新进度条
-        mean_loss.append(loss.item())
-        loop.set_postfix(loss=sum(mean_loss) / len(mean_loss))
+        losses.append(loss.item())
+        # loop.set_postfix(loss=sum(mean_loss) / len(mean_loss))
+        loop.set_postfix(loss=loss.item())
 
-    print(f"Mean loss was {sum(mean_loss)/len(mean_loss)}")
+    # 记录到 TensorBoard
+    avg_loss = sum(losses) / len(losses)
+    writer.add_scalar("Loss/Total", avg_loss, epoch)
+    writer.add_scalar("Loss/Coord", loss_parts[0], epoch)
+    writer.add_scalar("Loss/Obj", loss_parts[1], epoch)
+    writer.add_scalar("Loss/NoObj", loss_parts[2], epoch)
+    writer.add_scalar("Loss/Class", loss_parts[3], epoch)
+
+    print(f"Mean loss was {sum(losses)/len(losses)}")
 
 
 def main():
@@ -80,11 +93,12 @@ def main():
         drop_last=True,
     )
 
+    writer = SummaryWriter(log_dir="logs")
     # 4. 训练循环
     for epoch in range(start_epoch, EPOCHS):
         print(f"\nEpoch [{epoch+1}/{EPOCHS}]")
 
-        train_fn(train_loader, model, optimizer, loss_fn)
+        train_fn(train_loader, model, optimizer, loss_fn, writer, epoch)
         # 保存模型
         check_point = {
             "state_dict": model.state_dict(),
