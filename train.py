@@ -10,6 +10,7 @@ from dataset import train_voc_datasets
 from tqdm import tqdm
 import os
 from torch.utils.tensorboard.writer import SummaryWriter
+from eval import calculate_precision_recall, get_bboxes
 
 # --- 超参数配置 ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -21,7 +22,7 @@ NUM_WORKERS = 4
 SAVE_MODEL_PATH = "output/checkpoint/checkpoint.pth"
 
 
-def train_fn(train_loader, model, optimizer, loss_fn, writer: SummaryWriter, epoch):
+def train_fn(train_loader, model, optimizer, loss_fn, epoch, writer=None):
     loop = tqdm(train_loader, leave=True)
     losses = []
     for batch_idx, (x, y) in enumerate(loop):
@@ -46,11 +47,12 @@ def train_fn(train_loader, model, optimizer, loss_fn, writer: SummaryWriter, epo
 
     # 记录到 TensorBoard
     avg_loss = sum(losses) / len(losses)
-    writer.add_scalar("Loss/Total", avg_loss, epoch)
-    writer.add_scalar("Loss/Coord", loss_parts[0], epoch)
-    writer.add_scalar("Loss/Obj", loss_parts[1], epoch)
-    writer.add_scalar("Loss/NoObj", loss_parts[2], epoch)
-    writer.add_scalar("Loss/Class", loss_parts[3], epoch)
+    # if writer is not None:
+    #     writer.add_scalar("Loss/Total", avg_loss, epoch)
+    #     writer.add_scalar("Loss/Coord", loss_parts[0], epoch)
+    #     writer.add_scalar("Loss/Obj", loss_parts[1], epoch)
+    #     writer.add_scalar("Loss/NoObj", loss_parts[2], epoch)
+    #     writer.add_scalar("Loss/Class", loss_parts[3], epoch)
 
     print(f"Mean loss was {sum(losses)/len(losses)}")
 
@@ -67,6 +69,7 @@ def main():
 
     # --- 新增：加载断点逻辑 ---
     start_epoch = 0
+    epoch_and_precision_recall = {}
     if os.path.exists(SAVE_MODEL_PATH):
         print(f"--- Loading checkpoint: {SAVE_MODEL_PATH} ---")
 
@@ -81,6 +84,8 @@ def main():
         # 恢复轮数（从下一轮开始）
         start_epoch = check_point["epoch"]
 
+        epoch_and_precision_recall = check_point["epoch_and_precision_recall"]
+
         print(f"--- Resuming from epoch {start_epoch} ---")
     # -----------------------
 
@@ -93,23 +98,45 @@ def main():
         drop_last=True,
     )
 
-    writer = SummaryWriter(log_dir="logs")
+    # writer = SummaryWriter(log_dir="logs")
     # 4. 训练循环
     for epoch in range(start_epoch, EPOCHS):
         print(f"\nEpoch [{epoch+1}/{EPOCHS}]")
 
-        train_fn(train_loader, model, optimizer, loss_fn, writer, epoch)
+        train_fn(train_loader, model, optimizer, loss_fn, epoch)
+
+        # if (epoch + 1) % 10 == 0:
+        #     TEN_SAVE_MODEL_PATH = "output/checkpoint/checkpoint-" + str(epoch + 1) + ".pt"
+        #     torch.save(check_point, TEN_SAVE_MODEL_PATH)
+        #     print(f"--> Checkpoint saved to {TEN_SAVE_MODEL_PATH}")
+        if (epoch + 1) % 10 == 0:
+
+            pred_boxes, true_boxes = get_bboxes(
+                train_loader,
+                model,
+                iou_threshold=0.5,
+                threshold=0.1,
+                device=DEVICE,
+            )
+            stats = calculate_precision_recall(
+                pred_boxes, true_boxes, iou_threshold=0.5
+            )
+            epoch_and_precision_recall[str(epoch + 1)] = stats
+
         # 保存模型
         check_point = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
             "epoch": epoch + 1,  # 存入下一轮的起点
+            "epoch_and_precision_recall": epoch_and_precision_recall,
         }
         torch.save(check_point, SAVE_MODEL_PATH)
         print(f"--> Checkpoint saved to {SAVE_MODEL_PATH}")
 
         if (epoch + 1) % 10 == 0:
-            TEN_SAVE_MODEL_PATH = "output/checkpoint/checkpoint-" + str(epoch + 1) + ".pt"
+            TEN_SAVE_MODEL_PATH = (
+                "output/checkpoint/" + str(epoch + 1) + "-checkpoint.pth"
+            )
             torch.save(check_point, TEN_SAVE_MODEL_PATH)
             print(f"--> Checkpoint saved to {TEN_SAVE_MODEL_PATH}")
 
