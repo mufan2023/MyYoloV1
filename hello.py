@@ -49,7 +49,13 @@ from collections import Counter
 # b = Counter(a)
 # ic(b)
 
-a = torch.tensor([[1, 2, 3], [4, 5, 6]])
-ic(a.shape)
+# a = torch.tensor([[1, 2, 3], [4, 5, 6]])
+# ic(a.shape)
 
-print(torch.cumsum(a, dim=0))
+# print(torch.cumsum(a, dim=0))
+# gt_matched = [False] * 10
+# ic(gt_matched)
+Category="12345123456666677777"
+print("\n" + "="*45)
+print(f"{'Category':<15} | {'Correct':<8} | {'Total GT':<8} | {'Accuracy':<8}")
+print("-" * 45)

@@ -100,19 +100,15 @@ def cellboxes_to_boxes(out, S=7):
     """
     将模型输出 (batch, S, S, 30) 转换为 [batch, S*S, [class_id, score, x, y, w, h]]
     """
-    debug = False
     batch_size = out.shape[0]
     out = out.to("cpu")
-
-    if debug:
-        ic(batch_size)
 
     # 提取预测信息
     # 假设格式：[0:20]类别, [20]置信度1, [21:25]框1, [25]置信度2, [26:30]框2
     classes = torch.argmax(out[..., :20], dim=-1).unsqueeze(-1)  # (batch, S, S, 1)
 
-    conf1 = out[..., 20:21]  # (batch, S, S, 1)
-    conf2 = out[..., 25:26]
+    conf1 = out[..., 20:21]     # (batch, S, S, 1)
+    conf2 = out[..., 25:26]     # (batch, S, S, 1)
 
     # 比较两个框的置信度，取较大的那个作为该网格的代表
     best_conf, best_box_idx = torch.max(
