@@ -11,9 +11,12 @@ def intersection_over_union_single(box1, box2):
 
     intersection_x1, intersection_y1 = max(box1_x1, box2_x1), max(box1_y1, box2_y1)
     intersection_x2, intersection_y2 = min(box1_x2, box2_x2), min(box1_y2, box2_y2)
-    intersection = (intersection_x2 - intersection_x1).clamp(0) * (
-        intersection_y2 - intersection_y1
-    ).clamp(0)
+    intersection_w = max(0, intersection_x2 - intersection_x1)
+    intersection_h = max(0, intersection_y2 - intersection_y1)
+    # intersection = (intersection_x2 - intersection_x1).clamp(0) * (
+    #     intersection_y2 - intersection_y1
+    # ).clamp(0)
+    intersection = intersection_w * intersection_h
     w1, h1 = box1[2], box1[3]
     w2, h2 = box2[2], box2[3]
     union = w1 * h1 + w2 * h2 - intersection
@@ -97,7 +100,7 @@ def cellboxes_to_boxes(out, S=7):
     """
     将模型输出 (batch, S, S, 30) 转换为 [batch, S*S, [class_id, score, x, y, w, h]]
     """
-    debug = True
+    debug = False
     batch_size = out.shape[0]
     out = out.to("cpu")
 
@@ -126,12 +129,13 @@ def cellboxes_to_boxes(out, S=7):
 
     # 转换 x, y 坐标：从网格相对偏移 -> 全图相对比例
     # cell_indices 生成每个网格的左上角坐标 (0,0), (0,1)...
-    cell_indices = torch.arange(S).repeat(batch_size, S, 1).unsqueeze(-1)
+    x_cell = torch.arange(S).repeat(S, 1).view(1, S, S, 1).expand(batch_size, S, S, 1)
+    y_cell = x_cell.transpose(1, 2)
 
     # x = (x_offset + col_index) / S
-    x = (best_boxes[..., 0:1] + cell_indices) / S
+    x = (best_boxes[..., 0:1] + x_cell) / S
     # y = (y_offset + row_index) / S (注意转置以匹配行索引)
-    y = (best_boxes[..., 1:2] + cell_indices.transpose(1, 2)) / S
+    y = (best_boxes[..., 1:2] + y_cell) / S
     w = best_boxes[..., 2:3]
     h = best_boxes[..., 3:4]
 
@@ -159,10 +163,9 @@ def non_max_suppression(bboxes, iou_threshold, threshold):
             box
             for box in bboxes
             if box[0] != chosen_box[0]
-            or intersection_over_union(
-                torch.tensor(chosen_box[2:]),
-                torch.tensor(box[2:]),
-                box_format="midpoint",
+            or intersection_over_union_single(
+                chosen_box[2:],
+                box[2:],
             )
             < iou_threshold
         ]

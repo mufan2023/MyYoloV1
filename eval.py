@@ -104,3 +104,7 @@ def calculate_precision_recall(
 
         stats[c] = {"precision": precision, "recall": recall}
     return stats
+
+
+def get_mean_ap(all_pred_boxes, all_true_boxes, iou_threshold=0.5, num_classes=20):
+    pass
