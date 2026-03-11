@@ -103,7 +103,7 @@ def get_category_accuracy(
     print("=" * 45)
 
 
-def main():
+def stats_main():
     model = MyYoloV1(S=S, B=B, C=C).to(DEVICE)
     checkpoint = torch.load(CHECKPOINT_PATH, map_location=DEVICE)
     model.load_state_dict(checkpoint["state_dict"])
@@ -120,4 +120,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    stats_main()

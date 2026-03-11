@@ -11,6 +11,7 @@ from tqdm import tqdm
 import os
 from torch.utils.tensorboard.writer import SummaryWriter
 from eval import calculate_precision_recall, get_bboxes
+from stats import stats_main
 
 # --- 超参数配置 ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -69,7 +70,7 @@ def main():
 
     # --- 新增：加载断点逻辑 ---
     start_epoch = 0
-    epoch_and_precision_recall = {}
+    # epoch_and_precision_recall = {}
     if os.path.exists(SAVE_MODEL_PATH):
         print(f"--- Loading checkpoint: {SAVE_MODEL_PATH} ---")
 
@@ -84,7 +85,7 @@ def main():
         # 恢复轮数（从下一轮开始）
         start_epoch = check_point["epoch"]
 
-        epoch_and_precision_recall = check_point["epoch_and_precision_recall"]
+        # epoch_and_precision_recall = check_point["epoch_and_precision_recall"]
 
         print(f"--- Resuming from epoch {start_epoch} ---")
     # -----------------------
@@ -94,7 +95,7 @@ def main():
         dataset=train_voc_datasets,
         batch_size=BATCH_SIZE,
         num_workers=NUM_WORKERS,
-        shuffle=False,
+        shuffle=True,
         drop_last=True,
     )
 
@@ -106,39 +107,36 @@ def main():
         train_fn(train_loader, model, optimizer, loss_fn, epoch)
 
         # if (epoch + 1) % 10 == 0:
-        #     TEN_SAVE_MODEL_PATH = "output/checkpoint/checkpoint-" + str(epoch + 1) + ".pt"
-        #     torch.save(check_point, TEN_SAVE_MODEL_PATH)
-        #     print(f"--> Checkpoint saved to {TEN_SAVE_MODEL_PATH}")
-        if (epoch + 1) % 10 == 0:
 
-            pred_boxes, true_boxes = get_bboxes(
-                train_loader,
-                model,
-                iou_threshold=0.5,
-                threshold=0.1,
-                device=DEVICE,
-            )
-            stats = calculate_precision_recall(
-                pred_boxes, true_boxes, iou_threshold=0.5
-            )
-            epoch_and_precision_recall[str(epoch + 1)] = stats
+        #     pred_boxes, true_boxes = get_bboxes(
+        #         train_loader,
+        #         model,
+        #         iou_threshold=0.5,
+        #         threshold=0.1,
+        #         device=DEVICE,
+        #     )
+        #     stats = calculate_precision_recall(
+        #         pred_boxes, true_boxes, iou_threshold=0.5
+        #     )
+        #     epoch_and_precision_recall[str(epoch + 1)] = stats
 
         # 保存模型
         check_point = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
             "epoch": epoch + 1,  # 存入下一轮的起点
-            "epoch_and_precision_recall": epoch_and_precision_recall,
+            # "epoch_and_precision_recall": epoch_and_precision_recall,
         }
         torch.save(check_point, SAVE_MODEL_PATH)
         print(f"--> Checkpoint saved to {SAVE_MODEL_PATH}")
 
         if (epoch + 1) % 10 == 0:
-            TEN_SAVE_MODEL_PATH = (
-                "output/checkpoint/" + str(epoch + 1) + "-checkpoint.pth"
-            )
-            torch.save(check_point, TEN_SAVE_MODEL_PATH)
-            print(f"--> Checkpoint saved to {TEN_SAVE_MODEL_PATH}")
+            # TEN_SAVE_MODEL_PATH = (
+            #     "output/checkpoint/" + str(epoch + 1) + "-checkpoint.pth"
+            # )
+            # torch.save(check_point, TEN_SAVE_MODEL_PATH)
+            # print(f"--> Checkpoint saved to {TEN_SAVE_MODEL_PATH}")
+            stats_main()
 
     ic("111")
 
