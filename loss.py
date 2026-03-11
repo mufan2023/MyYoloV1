@@ -37,15 +37,13 @@ class MyYOLOV1Loss(nn.Module):
         iou_b2 = self.intersection_over_union(
             predictions[..., 26:30], targets[..., 21:25]
         )
-        ious = torch.cat([iou_b1.unsqueeze(0), iou_b2.unsqueeze(0)], dim=0)
-
-        if debug:
-            ic(iou_b1.shape, iou_b2.shape, ious.shape)
-            # ic(iou_b1[0], iou_b2[0])
+        # ious = torch.cat([iou_b1.unsqueeze(0), iou_b2.unsqueeze(0)], dim=0)
+        ious = torch.stack([iou_b1, iou_b2], dim=0)
 
         # 找到 IOU 最大的那个框的索引 (exists_box 相当于公式中的 1_obj)
         iou_maxes, bestbox = torch.max(ious, dim=0)
-        bestbox = bestbox.unsqueeze(-1)
+        if len(bestbox.shape) < 4:
+            bestbox = bestbox.unsqueeze(-1)
         exists_box = targets[..., 20].unsqueeze(3)  # 1 if object in cell
 
         if debug:
