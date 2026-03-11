@@ -74,7 +74,16 @@ class MyYoloV1(nn.Module):
 
     def forward(self, x):
         output = self.model(x)
-        return torch.reshape(output, (x.size(dim=0), self.S, self.S, -1))
+        output = torch.reshape(output, (x.size(dim=0), self.S, self.S, -1))
+
+        output[..., :20] = torch.sigmoid(output[..., :20])
+        output[..., 20:21] = torch.sigmoid(output[..., 20:21])
+        output[..., 25:26] = torch.sigmoid(output[..., 25:26])
+
+        output[..., 21:23] = torch.sigmoid(output[..., 21:23])
+        output[..., 26:28] = torch.sigmoid(output[..., 26:28])
+
+        return output
 
 
 # sourceImg = Image.open("./sorce_imgs/many_people.png")
@@ -86,7 +95,6 @@ class MyYoloV1(nn.Module):
 # myYoloV1 = MyYoloV1()
 # output = myYoloV1(sourceImg_x)
 # ic(output.shape)
-
 
 
 # writer = SummaryWriter(log_dir="logs")

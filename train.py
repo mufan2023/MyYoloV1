@@ -38,6 +38,7 @@ def train_fn(train_loader, model, optimizer, loss_fn, epoch, writer=None):
         loss.backward()
 
         # 梯度裁剪：防止训练初期梯度爆炸
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=10.0)
 
         optimizer.step()
 

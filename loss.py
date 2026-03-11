@@ -45,6 +45,7 @@ class MyYOLOV1Loss(nn.Module):
 
         # 找到 IOU 最大的那个框的索引 (exists_box 相当于公式中的 1_obj)
         iou_maxes, bestbox = torch.max(ious, dim=0)
+        bestbox = bestbox.unsqueeze(-1)
         exists_box = targets[..., 20].unsqueeze(3)  # 1 if object in cell
 
         if debug:
@@ -96,14 +97,25 @@ class MyYOLOV1Loss(nn.Module):
         # 3. 置信度损失 (No Obj Loss) #
         # ======================== #
         # 两个预测框都要计算无物体的损失
+        no_obj_mask_b1 = (1 - exists_box) + (exists_box * (1 - bestbox))
         no_obj_loss = self.mse(
-            torch.flatten((1 - exists_box) * predictions[..., 20:21], start_dim=1),
-            torch.flatten((1 - exists_box) * targets[..., 20:21], start_dim=1),
+            torch.flatten(no_obj_mask_b1 * predictions[..., 20:21]),
+            torch.flatten(no_obj_mask_b1 * targets[..., 20:21]),  # 此时 target 为 0
         )
+        # no_obj_loss = self.mse(
+        #     torch.flatten((1 - exists_box) * predictions[..., 20:21]),
+        #     torch.flatten((1 - exists_box) * targets[..., 20:21]),
+        # )
 
+        # no_obj_loss += self.mse(
+        #     torch.flatten((1 - exists_box) * predictions[..., 25:26]),
+        #     torch.flatten((1 - exists_box) * targets[..., 20:21]),
+        # )
+
+        no_obj_mask_b2 = (1 - exists_box) + (exists_box * bestbox)
         no_obj_loss += self.mse(
-            torch.flatten((1 - exists_box) * predictions[..., 25:26], start_dim=1),
-            torch.flatten((1 - exists_box) * targets[..., 20:21], start_dim=1),
+            torch.flatten(no_obj_mask_b2 * predictions[..., 25:26]),
+            torch.flatten(no_obj_mask_b2 * targets[..., 20:21]),
         )
 
         # ======================== #
