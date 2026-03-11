@@ -16,9 +16,9 @@ from stats import stats_main
 # --- 超参数配置 ---
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 LEARNING_RATE = 2e-5  # YOLO训练初期建议用较小的学习率防止梯度爆炸
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 WEIGHT_DECAY = 0.0005
-EPOCHS = 100
+EPOCHS = 500
 NUM_WORKERS = 4
 SAVE_MODEL_PATH = "output/checkpoint/checkpoint.pth"
 
