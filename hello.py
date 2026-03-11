@@ -55,7 +55,7 @@ from collections import Counter
 # print(torch.cumsum(a, dim=0))
 # gt_matched = [False] * 10
 # ic(gt_matched)
-Category="12345123456666677777"
-print("\n" + "="*45)
-print(f"{'Category':<15} | {'Correct':<8} | {'Total GT':<8} | {'Accuracy':<8}")
-print("-" * 45)
+# Category="12345123456666677777"
+# print("\n" + "="*45)
+# print(f"{'Category':<15} | {'Correct':<8} | {'Total GT':<8} | {'Accuracy':<8}")
+# print("-" * 45)

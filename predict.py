@@ -112,7 +112,7 @@ def main():
     test_images = [
         # "data/voc2007/VOCtest_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages/000001.jpg",
         # "data/voc2007/VOCtest_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages/009943.jpg",
-        "data/voc2007/VOCtrainval_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages/000009.jpg",
+        "data/voc2007/VOCtrainval_06-Nov-2007/VOCdevkit/VOC2007/JPEGImages/000228.jpg",
     ]
 
     for img_path in test_images:

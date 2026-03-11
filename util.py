@@ -172,7 +172,7 @@ def non_max_suppression(bboxes, iou_threshold, threshold):
 
 
 if __name__ == "__main__":
-    # input = torch.randn(49, 6)
+    input = torch.randn(16, 7, 7, 30)
     # ic(input.shape)
-    # cellboxes_to_boxes(input)
+    cellboxes_to_boxes(input)
     ic(111)

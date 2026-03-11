@@ -1,7 +1,7 @@
 import torch
 from model import MyYoloV1
 from torch.utils.data import DataLoader
-from dataset import test_voc_datasets
+from dataset import test_voc_datasets,train_voc_datasets
 from tqdm import tqdm
 from util import cellboxes_to_boxes, non_max_suppression, intersection_over_union_single
 
@@ -110,7 +110,7 @@ def main():
     print(f"Loaded model from {CHECKPOINT_PATH}")
 
     test_loader = DataLoader(
-        dataset=test_voc_datasets,
+        dataset=train_voc_datasets,
         batch_size=16,
         num_workers=4,
         shuffle=False,
